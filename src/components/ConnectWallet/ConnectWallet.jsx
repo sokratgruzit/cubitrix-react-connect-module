@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import useConnect from "../../hooks/use-connect";
+import { useConnect } from "../../hooks/use-connect";
 
 import styles from "./ConnectWallet.module.css";
 
-const ConnectWallet = () => {
+export const ConnectWallet = () => {
   const [ walletModal, setWalletModal ] = useState(false);
 
-  const { connect, disconnect, account, accountC, balance, isConnected, chainIdC } = useConnect();
-  console.log(accountC, balance, isConnected, chainIdC);
+  const { connect, disconnect, account } = useConnect();
+
   const handleModalOpen = (state) => {
+    console.log(state)
     setWalletModal(state);
   };
 
@@ -54,4 +55,3 @@ const ConnectWallet = () => {
   );
 };
 
-export default ConnectWallet;

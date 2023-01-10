@@ -1,18 +1,17 @@
 import { useState, useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { injected, walletConnect } from "./connector";
 import { useWeb3React } from "@web3-react/core";
 import axios from "../api/axios";
 
-const useConnect = () => {
+export const useConnect = () => {
   const { activate, account, library, active, deactivate, chainId } = useWeb3React();
 
   const [shouldDisable, setShouldDisable] = useState(false); // Should disable connect button while connecting to MetaMask
 
-  const [ isConnected, setIsConnected ] = useState(false);
-  const [ providerType, setProviderType ] = useState("");
-  const [ balance, setBalance ] = useState(0);
-  const [ accountC, setAccountC ] = useState("");
-  const [ chainIdC, setChainIdC ] = useState("");
+  const dispatch = useDispatch();
+  const isConnected = useSelector((state) => state.connect.isConnected);
+  const providerType = useSelector((state) => state.connect.providerType);
 
   if (window.ethereum === undefined) console.log("error");
 
@@ -21,10 +20,12 @@ const useConnect = () => {
     if (library && account && chainId) {
       const fetchData = async () => {
         library.eth.getBalance(account).then(async (res) => {
-          setBalance(+res);
-          setAccountC(account);
-          setChainIdC(chainId);
-          
+          dispatch({
+            type: "UPDATE_STATE",
+            balance: +res,
+            account,
+            chainId,
+          });
           // automatically send request for login
           const fetchData = async () => {
             await axios
@@ -44,12 +45,9 @@ const useConnect = () => {
       };
       fetchData();
     } else {
-      setBalance(0);
-      setAccountC("");
-      setChainIdC("");
-      console.log('bla')
+      dispatch({ type: "UPDATE_STATE", account: "", chainId, balance: 0 });
     }
-  }, [library, account, chainId]);
+  }, [library, dispatch, account, chainId]);
 
   // check if user has connected before and try to reconnect. persists user login state across refreshes.
   useEffect(() => {
@@ -63,8 +61,11 @@ const useConnect = () => {
 
   // watch user active status and save it in global store for persist.
   useEffect(() => {
-    setIsConnected(active);
-  }, [active]);
+    dispatch({
+      type: "UPDATE_STATE",
+      isConnected: active,
+    });
+  }, [active, dispatch]);
 
   // console.log(useSelector((state) => state.connect));
 
@@ -77,24 +78,36 @@ const useConnect = () => {
           console.log("Please switch your network in wallet");
         });
         setShouldDisable(false);
-        setProviderType("metaMask");
-        setIsConnected(true);
+        dispatch({
+          type: "CONNECT",
+          payload: {
+            providerType: "metaMask",
+            isConnected: true,
+          },
+        });
       } else if (providerType === "walletConnect") {
         activate(walletConnect, undefined, true).catch(() => {
           console.log("Please switch your network in wallet");
         });
         setShouldDisable(false);
-        setProviderType("walletConnect");
-        setIsConnected(true);
+        dispatch({
+          type: "CONNECT",
+          payload: {
+            providerType: "walletConnect",
+            isConnected: true,
+          },
+        });
       }
 
       if (library && account && chainId) {
         const fetchData = async () => {
           library.eth.getBalance(account).then(async (res) => {
-            setBalance(+res);
-            setAccountC(account);
-            setChainIdC(chainId);
-
+            dispatch({
+              type: "UPDATE_STATE",
+              balance: +res,
+              account,
+              chainId,
+            });
             // automatically send request for login
             const fetchData = async () => {
               await axios
@@ -123,8 +136,11 @@ const useConnect = () => {
   const disconnect = async () => {
     try {
       deactivate();
-      setProviderType("");
-      setIsConnected(false);
+      dispatch({
+        type: "UPDATE_STATE",
+        account: "",
+        providerType: "",
+      });
     } catch (error) {
       console.log("Error on disconnnect: ", error);
     }
@@ -140,10 +156,8 @@ const useConnect = () => {
       providerType,
       chainId,
     }),
-    [account, shouldDisable, providerType, chainId, balance, chainIdC, accountC, isConnected],
+    [account, shouldDisable, providerType, chainId],
   );
 
   return values;
 };
-
-export default useConnect;

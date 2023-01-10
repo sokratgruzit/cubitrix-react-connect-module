@@ -37,6 +37,7 @@ export default {
     external: [
         "react", 
         "react-dom",
+        "react-redux",
         "@web3-react/core",
         "@web3-react/injected-connector",
         "@web3-react/walletconnect-connector",

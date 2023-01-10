@@ -1,11 +1,8 @@
-import './index.module.css';
 import React from 'react';
-import ConnectWallet from "./components/ConnectWallet/ConnectWallet.jsx";
 
-const ConnectWalletApp = () => {
-  return (
-    <ConnectWallet />
-  );
-}
-
-export default ConnectWalletApp;
+export { ConnectWallet } from "./components/ConnectWallet/ConnectWallet.jsx";
+export { RecoveryLogin } from "./components/RecoveryLogin/RecoveryLogin.jsx";
+export { TwoFactorAuth } from "./components/TwoFactorAuth/TwoFactorAuth.jsx";
+export { ValidateAuth } from "./components/TwoFactorAuth/ValidateAuth.jsx";
+export { connectReducer } from "./reducers/connectReducer.js";
+export { useConnect } from "./hooks/use-connect.js";
