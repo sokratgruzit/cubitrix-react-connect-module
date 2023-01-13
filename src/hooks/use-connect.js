@@ -5,11 +5,11 @@ import { useWeb3React } from "@web3-react/core";
 import axios from "../api/axios";
 
 export const useConnect = () => {
+  const dispatch = useDispatch();
   const { activate, account, library, active, deactivate, chainId } = useWeb3React();
 
   const [shouldDisable, setShouldDisable] = useState(false); // Should disable connect button while connecting to MetaMask
 
-  const dispatch = useDispatch();
   const isConnected = useSelector((state) => state.connect.isConnected);
   const providerType = useSelector((state) => state.connect.providerType);
 

@@ -1,2 +1,2 @@
-export { ConnectWallet } from './ConnectWallet.jsx';
-import React from 'react';
+export { ConnectWallet } from "./ConnectWallet.jsx";
+export { ConnectMetaMask } from "./ConnectMetaMask.jsx";
