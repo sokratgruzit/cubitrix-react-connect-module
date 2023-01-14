@@ -5,11 +5,11 @@ import { useWeb3React } from "@web3-react/core";
 import axios from "../api/axios";
 
 export const useConnect = () => {
-  const dispatch = useDispatch();
   const { activate, account, library, active, deactivate, chainId } = useWeb3React();
 
   const [shouldDisable, setShouldDisable] = useState(false); // Should disable connect button while connecting to MetaMask
 
+  const dispatch = useDispatch();
   const isConnected = useSelector((state) => state.connect.isConnected);
   const providerType = useSelector((state) => state.connect.providerType);
 
@@ -27,7 +27,7 @@ export const useConnect = () => {
             chainId,
           });
           // automatically send request for login
-          const fetchData = async () => {
+          const postData = async () => {
             await axios
               .post("/accounts/login", {
                 address: account,
@@ -40,12 +40,10 @@ export const useConnect = () => {
                 console.log(err.message);
               });
           };
-          fetchData();
+          postData();
         });
       };
       fetchData();
-    } else {
-      dispatch({ type: "UPDATE_STATE", account: "", chainId, balance: 0 });
     }
   }, [library, dispatch, account, chainId]);
 
@@ -75,6 +73,8 @@ export const useConnect = () => {
     try {
       if (providerType === "metaMask") {
         activate(injected, undefined, true).catch(() => {
+          dispatch({ type: "UPDATE_STATE", account: "", chainId, balance: 0 });
+
           console.log("Please switch your network in wallet");
         });
         setShouldDisable(false);
@@ -87,6 +87,7 @@ export const useConnect = () => {
         });
       } else if (providerType === "walletConnect") {
         activate(walletConnect, undefined, true).catch(() => {
+          dispatch({ type: "UPDATE_STATE", account: "", chainId, balance: 0 });
           console.log("Please switch your network in wallet");
         });
         setShouldDisable(false);
@@ -97,35 +98,6 @@ export const useConnect = () => {
             isConnected: true,
           },
         });
-      }
-
-      if (library && account && chainId) {
-        const fetchData = async () => {
-          library.eth.getBalance(account).then(async (res) => {
-            dispatch({
-              type: "UPDATE_STATE",
-              balance: +res,
-              account,
-              chainId,
-            });
-            // automatically send request for login
-            const fetchData = async () => {
-              await axios
-                .post("/accounts/login", {
-                  address: account,
-                  balance: +res,
-                })
-                .then((res) => {
-                  console.log(res);
-                })
-                .catch((err) => {
-                  console.log(err.message);
-                });
-            };
-            fetchData();
-          });
-        };
-        fetchData();
       }
     } catch (error) {
       console.log("Error on connecting: ", error);
