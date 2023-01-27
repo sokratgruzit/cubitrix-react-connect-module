@@ -37,13 +37,6 @@ export const connectReducer = (state = INIT_STATE, action) => {
     };
   }
 
-  if (action.type === "CONNECT") {
-    return {
-      ...state,
-      ...action.payload,
-    };
-  }
-
   if (action.type === "UPDATE_STATE") {
     return {
       ...state,

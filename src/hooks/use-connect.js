@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { injected, walletConnect } from "./connector";
 import { useWeb3React } from "@web3-react/core";
 import axios from "../api/axios";
 
@@ -56,7 +55,7 @@ export const useConnect = () => {
   }, [account, dispatch, isConnected, providerType]);
 
   // Connect to wallet
-  const connect = async (providerType) => {
+  const connect = async (providerType, injected) => {
     setShouldDisable(true);
     try {
       if (providerType === "metaMask") {
@@ -77,7 +76,7 @@ export const useConnect = () => {
 
         setShouldDisable(false);
       } else if (providerType === "walletConnect") {
-        await activate(walletConnect, undefined, true)
+        await activate(injected, undefined, true)
           .then(() => {
             dispatch({
               type: "UPDATE_STATE",
