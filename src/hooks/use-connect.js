@@ -12,92 +12,87 @@ export const useConnect = () => {
   const dispatch = useDispatch();
   const isConnected = useSelector((state) => state.connect.isConnected);
   const providerType = useSelector((state) => state.connect.providerType);
+  const savedAccount = useSelector((state) => state.connect.account);
 
   if (window.ethereum === undefined) console.log("error");
 
-  //check if you are connected to an account on supported chain. If so get a balance and set info in global state. else set default info.
+  //check if you are connected to an account on supported chain.
   useEffect(() => {
-    if (library && account && chainId) {
+    if (account && chainId) {
       const fetchData = async () => {
-        library.eth.getBalance(account).then(async (res) => {
-          dispatch({
-            type: "UPDATE_STATE",
-            balance: +res,
-            account,
-            chainId,
-          });
-          // automatically send request for login
-          const postData = async () => {
-            await axios
-              .post("/accounts/login", {
-                address: account,
-                balance: +res,
-              })
-              .then((res) => {
-                console.log(res);
-              })
-              .catch((err) => {
-                console.log(err.message);
-              });
-          };
-          postData();
-        });
+        await axios
+          .post("/accounts/login", {
+            address: account,
+          })
+          .then((res) => {})
+          .catch((err) => {});
       };
       fetchData();
+    } else {
+      dispatch({
+        type: "UPDATE_STATE",
+        account: "",
+      });
     }
-  }, [library, dispatch, account, chainId]);
+  }, [dispatch, account, chainId]);
 
-  // check if user has connected before and try to reconnect. persists user login state across refreshes.
   useEffect(() => {
-    async function fetchData() {
-      if (isConnected) {
-        connect(providerType);
+    if (isConnected) {
+      async function fetchData() {
+        if (providerType === "metaMask" || providerType === "walletConnect") {
+          connect(providerType);
+          setShouldDisable(true);
+        }
       }
+      fetchData();
+      //return () => deactivate();
+    } else {
+      dispatch({
+        type: "UPDATE_STATE",
+        account: "",
+        isConnected: false,
+      });
     }
-    fetchData();
-  }, []);
-
-  // watch user active status and save it in global store for persist.
-  useEffect(() => {
-    dispatch({
-      type: "UPDATE_STATE",
-      isConnected: active,
-    });
-  }, [active, dispatch]);
-
-  // console.log(useSelector((state) => state.connect));
+  }, [account, dispatch, isConnected, providerType]);
 
   // Connect to wallet
   const connect = async (providerType) => {
     setShouldDisable(true);
     try {
       if (providerType === "metaMask") {
-        activate(injected, undefined, true).catch(() => {
-          dispatch({ type: "UPDATE_STATE", account: "", chainId, balance: 0 });
+        await activate(injected, undefined, true)
+          .then(() => {
+            dispatch({
+              type: "UPDATE_STATE",
+              account: account ? account : savedAccount,
+              isConnected: true,
+              providerType: "metaMask",
+            });
+          })
+          .catch(() => {
+            dispatch({ type: "UPDATE_STATE", account: "" });
+            console.log("Please switch your network in wallet");
+            setShouldDisable(false);
+          });
 
-          console.log("Please switch your network in wallet");
-        });
         setShouldDisable(false);
-        dispatch({
-          type: "CONNECT",
-          payload: {
-            providerType: "metaMask",
-            isConnected: true,
-          },
-        });
       } else if (providerType === "walletConnect") {
-        activate(walletConnect, undefined, true).catch(() => {
-          dispatch({ type: "UPDATE_STATE", account: "", chainId, balance: 0 });
-          console.log("Please switch your network in wallet");
-        });
+        await activate(walletConnect, undefined, true)
+          .then(() => {
+            dispatch({
+              type: "UPDATE_STATE",
+              account: account ? account : savedAccount,
+              isConnected: true,
+              providerType: "walletConnect",
+            });
+          })
+          .catch(() => {
+            dispatch({ type: "UPDATE_STATE", account: "" });
+            console.log("Please switch your network in wallet");
+            setShouldDisable(false);
+          });
+
         setShouldDisable(false);
-        dispatch({
-          type: "CONNECT",
-          payload: {
-            providerType: "walletConnect",
-            isConnected: true,
-          },
-        });
       }
     } catch (error) {
       console.log("Error on connecting: ", error);
