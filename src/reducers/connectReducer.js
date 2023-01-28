@@ -30,13 +30,6 @@ export const connectReducer = (state = INIT_STATE, action) => {
     };
   }
 
-  if (action.type === "GET_BALANCE") {
-    return {
-      ...state,
-      balance: action.balance,
-    };
-  }
-
   if (action.type === "UPDATE_STATE") {
     return {
       ...state,
