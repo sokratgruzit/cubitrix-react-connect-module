@@ -3,7 +3,6 @@ const INIT_STATE = {
   providerType: "",
   walletModalOpen: false,
   account: "",
-  balance: 0,
   chainId: undefined,
   otpEnabled: false
 };
