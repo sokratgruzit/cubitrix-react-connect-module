@@ -90,8 +90,8 @@ export const useConnect = () => {
           })
           .catch((e) => {
             dispatch({ type: "UPDATE_STATE", account: "" });
-            // if (e.toString().startsWith("UnsupportedChainIdError"))
-            //   setError("Please switch your network in wallet");
+            if (e.toString().startsWith("UnsupportedChainIdError"))
+              setError("Please switch your network in wallet");
             setShouldDisable(false);
           });
 
