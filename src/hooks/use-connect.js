@@ -8,6 +8,7 @@ export const useConnect = () => {
   const { activate, account, library, active, deactivate, chainId } = useWeb3React();
 
   const [shouldDisable, setShouldDisable] = useState(false); // Should disable connect button while connecting to MetaMask
+  const [error, setError] = useState("");
 
   const dispatch = useDispatch();
   const isConnected = useSelector((state) => state.connect.isConnected);
@@ -69,9 +70,10 @@ export const useConnect = () => {
               providerType: "metaMask",
             });
           })
-          .catch(() => {
+          .catch((e) => {
             dispatch({ type: "UPDATE_STATE", account: "" });
-            console.log("Please switch your network in wallet");
+            if (e.toString().startsWith("UnsupportedChainIdError"))
+              setError("Please switch your network in wallet");
             setShouldDisable(false);
           });
 
@@ -86,9 +88,10 @@ export const useConnect = () => {
               providerType: "walletConnect",
             });
           })
-          .catch(() => {
+          .catch((e) => {
             dispatch({ type: "UPDATE_STATE", account: "" });
-            console.log("Please switch your network in wallet");
+            // if (e.toString().startsWith("UnsupportedChainIdError"))
+            //   setError("Please switch your network in wallet");
             setShouldDisable(false);
           });
 
@@ -122,8 +125,10 @@ export const useConnect = () => {
       shouldDisable,
       providerType,
       chainId,
+      error,
+      setError,
     }),
-    [account, shouldDisable, providerType, chainId],
+    [account, shouldDisable, providerType, chainId, error],
   );
 
   return values;
