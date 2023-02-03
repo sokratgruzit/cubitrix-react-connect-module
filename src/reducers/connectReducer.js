@@ -3,7 +3,6 @@ const INIT_STATE = {
   providerType: "",
   walletModalOpen: false,
   account: "",
-  balance: 0,
   chainId: undefined,
   otpEnabled: false
 };
@@ -27,13 +26,6 @@ export const connectReducer = (state = INIT_STATE, action) => {
     return {
       ...state,
       account: action.account,
-    };
-  }
-
-  if (action.type === "GET_BALANCE") {
-    return {
-      ...state,
-      balance: action.balance,
     };
   }
 
