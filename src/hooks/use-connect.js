@@ -1,102 +1,103 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { injected, walletConnect } from "./connector";
 import { useWeb3React } from "@web3-react/core";
-import axios from "../api/axios";
 
-export const useConnect = () => {
-  const { activate, account, library, active, deactivate, chainId } = useWeb3React();
+export const useConnect = (props) => {
+  let { activate, account, library, deactivate, chainId } = useWeb3React();
 
-  const [shouldDisable, setShouldDisable] = useState(false); // Should disable connect button while connecting to MetaMask
+  const [connectionLoading, setConnectionLoading] = useState(false); // Should disable connect button while connecting to MetaMask
   const [error, setError] = useState("");
+  const [tried, setTried] = useState(false);
 
   const dispatch = useDispatch();
   const isConnected = useSelector((state) => state.connect.isConnected);
   const providerType = useSelector((state) => state.connect.providerType);
-  const savedAccount = useSelector((state) => state.connect.account);
 
-  if (window.ethereum === undefined) console.log("error");
-
-  //check if you are connected to an account on supported chain.
-  useEffect(() => {
-    if (account && chainId) {
-      const fetchData = async () => {
-        await axios
-          .post("/accounts/login", {
-            address: account,
-          })
-          .then((res) => {})
-          .catch((err) => {});
-      };
-      fetchData();
-    } else {
-      dispatch({
-        type: "UPDATE_STATE",
-        account: "",
+  // function for metamask eagerly connect. needs access to injected
+  const MetaMaskEagerlyConnect = (injected) => {
+    if (providerType === "metaMask") {
+      injected.isAuthorized().then((isAuthorized) => {
+        if (isAuthorized && isConnected) {
+          connect(providerType, injected);
+        } else {
+          dispatch({
+            type: "UPDATE_STATE",
+            account: "",
+            isConnected: false,
+          });
+        }
       });
     }
-  }, [dispatch, account, chainId]);
+  };
 
+  // try eagerly connect after refresh for wallet connect
   useEffect(() => {
-    if (isConnected) {
-      async function fetchData() {
-        if (providerType === "metaMask" || providerType === "walletConnect") {
+    if (providerType === "walletConnect") {
+      if (isConnected) {
+        // brute force solution
+        setTimeout(() => {
           connect(providerType);
-          setShouldDisable(true);
-        }
+        }, 0);
+      } else {
+        dispatch({
+          type: "UPDATE_STATE",
+          account: "",
+          isConnected: false,
+        });
       }
-      fetchData();
-      //return () => deactivate();
-    } else {
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  // mirror account data values in redux
+  useEffect(() => {
+    dispatch({
+      type: "UPDATE_STATE",
+      account: account ? account : "",
+      chainId: chainId ? chainId : "",
+    });
+  }, [account, chainId, dispatch]);
+
+  //handle wallet connect eagerly popup
+  const firstUpdate = useRef(true);
+  useEffect(() => {
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    }
+    if (tried && !account) {
       dispatch({
         type: "UPDATE_STATE",
         account: "",
         isConnected: false,
       });
     }
-  }, [account, dispatch, isConnected, providerType]);
+    // eslint-disable-next-line
+  }, [tried, account]);
 
   // Connect to wallet
-  const connect = async (providerType) => {
-    setShouldDisable(true);
+  const connect = async (providerType, injected) => {
+    setConnectionLoading(true);
+    if (typeof window.ethereum === "undefined" && providerType === "metaMask") {
+      return setError("no metamask");
+    }
     try {
-      if (providerType === "metaMask") {
-        await activate(injected, undefined, true)
-          .then(() => {
-            dispatch({
-              type: "UPDATE_STATE",
-              account: account ? account : savedAccount,
-              isConnected: true,
-              providerType: "metaMask",
-            });
-          })
-          .catch((e) => {
-            dispatch({ type: "UPDATE_STATE", account: "" });
-            if (e.toString().startsWith("UnsupportedChainIdError"))
-              setError("Please switch your network in wallet");
-            setShouldDisable(false);
+      await activate(injected, undefined, true)
+        .then(() => {
+          dispatch({
+            type: "UPDATE_STATE",
+            isConnected: true,
+            providerType,
           });
+          setTried(true);
+        })
+        .catch((e) => {
+          dispatch({ type: "UPDATE_STATE", account: "", isConnected: false });
+          if (e.toString().startsWith("UnsupportedChainIdError"))
+            setError("Please switch your network in wallet");
+        });
 
-        setShouldDisable(false);
-      } else if (providerType === "walletConnect") {
-        await activate(walletConnect, undefined, true)
-          .then(() => {
-            dispatch({
-              type: "UPDATE_STATE",
-              account: account ? account : savedAccount,
-              isConnected: true,
-              providerType: "walletConnect",
-            });
-          })
-          .catch((e) => {
-            dispatch({ type: "UPDATE_STATE", account: "" });
-            if (e.toString().startsWith("UnsupportedChainIdError"))
-              setError("Please switch your network in wallet");
-            setShouldDisable(false);
-          });
-
-        setShouldDisable(false);
-      }
+      setConnectionLoading(false);
     } catch (error) {
       console.log("Error on connecting: ", error);
     }
@@ -122,13 +123,15 @@ export const useConnect = () => {
       connect,
       disconnect,
       library,
-      shouldDisable,
+      connectionLoading,
       providerType,
       chainId,
       error,
       setError,
+      MetaMaskEagerlyConnect,
     }),
-    [account, shouldDisable, providerType, chainId, error],
+    // eslint-disable-next-line
+    [account, connectionLoading, providerType, chainId, error],
   );
 
   return values;
