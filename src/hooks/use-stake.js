@@ -9,8 +9,10 @@ import { useConnect } from ".";
 import { INIT_STATE } from "../reducers/stakeReducer";
 
 export const useStake = ({ Router, tokenAddress }) => {
-  const { library, account } = useConnect();
+  const { library } = useConnect();
   var web3Obj = library;
+
+  const { account } = useSelector((state) => state.connect);
 
   const { depositAmount, timeperiod } = useSelector((state) => state.stake);
 
@@ -91,15 +93,9 @@ export const useStake = ({ Router, tokenAddress }) => {
       },
     });
     try {
-      // console.log("contract");
-      // console.log(library);
       var contract = new web3Obj.eth.Contract(WBNB, tokenAddress);
-      // console.log("contract");
-      // console.log(contract);
       var amountIn = 10 ** 69;
       amountIn = amountIn.toLocaleString("fullwide", { useGrouping: false });
-      //   var amountIn = new web3Obj.utils.BigNumber("10").pow(69);
-      // console.log(account);
       await contract.methods
         .approve(Router, amountIn.toString())
         .send({ from: account })
@@ -111,7 +107,6 @@ export const useStake = ({ Router, tokenAddress }) => {
               loading: false,
             },
           });
-          // checkAllowance("0xaae3d23a76920c9064aefdd571360289fcc80053");
         });
     } catch (err) {
       console.log(err);
@@ -145,7 +140,6 @@ export const useStake = ({ Router, tokenAddress }) => {
 
       var pow = 10 ** decimals;
       var amountIn = depositAmount * pow;
-      // var amountInNew = `${new ethers.utils.BigNumber(amountIn.toString())}`;
       amountIn = amountIn.toLocaleString("fullwide", { useGrouping: false });
 
       await contract.methods
@@ -196,7 +190,6 @@ export const useStake = ({ Router, tokenAddress }) => {
             },
           });
           notify(false, "successfully unstake");
-          //   withdrawModal();
         });
     } catch (err) {
       dispatch({
@@ -259,8 +252,6 @@ export const useStake = ({ Router, tokenAddress }) => {
         .call();
       var pow = 10 ** decimals;
       var balanceInEth = getBalance / pow;
-      // console.log(getBalance);
-      // console.log(balanceInEth);
       dispatch({
         type: "UPDATE_STAKE_STATE",
         payload: {
@@ -363,7 +354,6 @@ export const useStake = ({ Router, tokenAddress }) => {
         depositAmount: balanceInEth.toFixed(5),
       },
     });
-    // setWithdrawAmount(userInfo.staked);
   };
 
   const handleTimeperiodDate = (period) => {
