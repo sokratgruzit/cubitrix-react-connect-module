@@ -155,8 +155,10 @@ export const useStake = ({ Router, tokenAddress }) => {
               timeperiodDate: INIT_STATE.timeperiodDate,
               timeperiod: INIT_STATE.timeperiod,
             },
-          });
+          })
+        .then(() => {
           afterStake();
+        })
           notify(false, "Staking process complete.");
         });
       
