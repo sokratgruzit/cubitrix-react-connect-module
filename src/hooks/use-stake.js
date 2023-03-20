@@ -121,7 +121,7 @@ export const useStake = ({ Router, tokenAddress }) => {
   };
 
   const stake = async (afterStake) => {
-    if (isNaN(parseFloat(depositAmount)) || parseFloat(depositAmount) <= 0) {
+    if (parseFloat(depositAmount) <= 0) {
       notify(true, "Error! please enter amount");
       return;
     }
