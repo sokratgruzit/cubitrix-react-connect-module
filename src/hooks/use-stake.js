@@ -118,8 +118,8 @@ export const useStake = ({ Router, tokenAddress }) => {
     }
   };
 
-  const stake = async () => {
-    if (isNaN(parseFloat(depositAmount)) || parseFloat(depositAmount) <= 0) {
+  const stake = async (afterStake) => {
+    if (parseFloat(depositAmount) <= 0) {
       notify(true, "Error! please enter amount");
       return;
     }
@@ -153,9 +153,13 @@ export const useStake = ({ Router, tokenAddress }) => {
               timeperiodDate: INIT_STATE.timeperiodDate,
               timeperiod: INIT_STATE.timeperiod,
             },
-          });
+          })
           notify(false, "Staking process complete.");
+        })
+        .then(() => {
+          afterStake();
         });
+      
     } catch (err) {
       dispatch({
         type: "UPDATE_STAKE_STATE",
