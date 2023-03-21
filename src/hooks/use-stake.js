@@ -6,7 +6,7 @@ import moment from "moment";
 
 import { useConnect } from "@cubitrix/cubitrix-react-connect-module";
 
-import { INIT_STATE } from "../store/stakeReducer";
+import { INIT_STATE } from "../reducers/stakeReducer";
 
 export const useStake = ({ Router, tokenAddress }) => {
   const { library } = useConnect();
@@ -153,13 +153,12 @@ export const useStake = ({ Router, tokenAddress }) => {
               timeperiodDate: INIT_STATE.timeperiodDate,
               timeperiod: INIT_STATE.timeperiod,
             },
-          })
+          });
           notify(false, "Staking process complete.");
         })
         .then(() => {
           afterStake();
         });
-      
     } catch (err) {
       dispatch({
         type: "UPDATE_STAKE_STATE",
