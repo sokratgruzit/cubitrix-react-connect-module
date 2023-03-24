@@ -52,7 +52,7 @@ export const useStake = ({ Router, tokenAddress }) => {
         dispatch({
           type: "UPDATE_STAKE_STATE",
           payload: {
-            setIsAllowance: true,
+            isAllowance: true,
           },
         });
       }
@@ -62,7 +62,7 @@ export const useStake = ({ Router, tokenAddress }) => {
           dispatch({
             type: "UPDATE_STAKE_STATE",
             payload: {
-              setIsAllowance: true,
+              isAllowance: true,
             },
           });
         }
@@ -101,7 +101,7 @@ export const useStake = ({ Router, tokenAddress }) => {
           dispatch({
             type: "UPDATE_STAKE_STATE",
             payload: {
-              setIsAllowance: false,
+              isAllowance: false,
               loading: false,
             },
           });
@@ -118,8 +118,8 @@ export const useStake = ({ Router, tokenAddress }) => {
     }
   };
 
-  const stake = async (afterStake) => {
-    if (parseFloat(depositAmount) <= 0) {
+  const stake = async () => {
+    if (isNaN(parseFloat(depositAmount)) || parseFloat(depositAmount) <= 0) {
       notify(true, "Error! please enter amount");
       return;
     }
@@ -130,6 +130,7 @@ export const useStake = ({ Router, tokenAddress }) => {
         loading: true,
       },
     });
+
     try {
       var tokenContract = new web3Obj.eth.Contract(WBNB, tokenAddress);
       const decimals = await tokenContract.methods.decimals().call();
@@ -141,6 +142,7 @@ export const useStake = ({ Router, tokenAddress }) => {
       amountIn = amountIn.toLocaleString("fullwide", { useGrouping: false });
 
       await contract.methods
+        // .stake(amountIn.toString(), timeperiod.toString())
         .stake(amountIn.toString(), timeperiod.toString())
         .send({ from: account })
         .then((err) => {
@@ -155,9 +157,6 @@ export const useStake = ({ Router, tokenAddress }) => {
             },
           });
           notify(false, "Staking process complete.");
-        })
-        .then(() => {
-          afterStake();
         });
     } catch (err) {
       dispatch({
@@ -383,7 +382,7 @@ export const useStake = ({ Router, tokenAddress }) => {
       });
     }
     // eslint-disable-next-line
-  }, [account]);
+  }, [account, depositAmount]);
 
   const values = useMemo(
     () => ({

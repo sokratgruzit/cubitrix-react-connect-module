@@ -14,7 +14,7 @@ export const useConnect = (props) => {
   const providerType = useSelector((state) => state.connect.providerType);
 
   // function for metamask eagerly connect. needs access to injected
-  const MetaMaskEagerlyConnect = (injected) => {
+  const MetaMaskEagerlyConnect = (injected, callback) => {
     if (providerType === "metaMask") {
       injected.isAuthorized().then((isAuthorized) => {
         if (isAuthorized && isConnected) {
@@ -26,6 +26,7 @@ export const useConnect = (props) => {
             isConnected: false,
           });
         }
+        callback();
       });
     }
   };
