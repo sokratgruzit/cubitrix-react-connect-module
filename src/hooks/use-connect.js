@@ -26,7 +26,9 @@ export const useConnect = (props) => {
             isConnected: false,
           });
         }
-        callback();
+        if (callback) {
+          callback();
+        }
       });
     }
   };
