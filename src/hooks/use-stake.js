@@ -118,7 +118,7 @@ export const useStake = ({ Router, tokenAddress }) => {
     }
   };
 
-  const stake = async () => {
+  const stake = async (callback) => {
     if (isNaN(parseFloat(depositAmount)) || parseFloat(depositAmount) <= 0) {
       notify(true, "Error! please enter amount");
       return;
@@ -142,7 +142,6 @@ export const useStake = ({ Router, tokenAddress }) => {
       amountIn = amountIn.toLocaleString("fullwide", { useGrouping: false });
 
       await contract.methods
-        // .stake(amountIn.toString(), timeperiod.toString())
         .stake(amountIn.toString(), timeperiod.toString())
         .send({ from: account })
         .then((err) => {
@@ -156,6 +155,7 @@ export const useStake = ({ Router, tokenAddress }) => {
               timeperiod: INIT_STATE.timeperiod,
             },
           });
+          if (callback) callback();
           notify(false, "Staking process complete.");
         });
     } catch (err) {
