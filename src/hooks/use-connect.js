@@ -16,20 +16,24 @@ export const useConnect = (props) => {
   // function for metamask eagerly connect. needs access to injected
   const MetaMaskEagerlyConnect = (injected, callback) => {
     if (providerType === "metaMask") {
-      injected.isAuthorized().then((isAuthorized) => {
-        if (isAuthorized && isConnected) {
-          connect(providerType, injected);
-        } else {
-          dispatch({
-            type: "UPDATE_STATE",
-            account: "",
-            isConnected: false,
-          });
-        }
-        if (callback) {
-          callback();
-        }
-      });
+      injected
+        .isAuthorized()
+        .then((isAuthorized) => {
+          if (isAuthorized && isConnected) {
+            connect(providerType, injected);
+          } else {
+            dispatch({
+              type: "UPDATE_STATE",
+              account: "",
+              isConnected: false,
+            });
+          }
+        })
+        .finally(() => {
+          if (callback) {
+            callback();
+          }
+        });
     }
   };
 
