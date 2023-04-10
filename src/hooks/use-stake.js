@@ -83,7 +83,7 @@ export const useStake = ({ Router, tokenAddress }) => {
     }
   };
 
-  const approve = async () => {
+  const approve = async (callback) => {
     dispatch({
       type: "UPDATE_STAKE_STATE",
       payload: {
@@ -105,6 +105,7 @@ export const useStake = ({ Router, tokenAddress }) => {
               loading: false,
             },
           });
+          if (callback) callback();
         });
     } catch (err) {
       console.log(err);
