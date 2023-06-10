@@ -166,7 +166,7 @@ export const useConnect = (props) => {
 
   const values = useMemo(
     () => ({
-      account,
+      account: account ?? "",
       active,
       connect,
       disconnect,
