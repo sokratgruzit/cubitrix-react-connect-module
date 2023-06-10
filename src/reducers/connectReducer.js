@@ -4,7 +4,7 @@ const INIT_STATE = {
   walletModalOpen: false,
   account: "",
   chainId: undefined,
-  otpEnabled: false
+  otpEnabled: false,
 };
 
 export const connectReducer = (state = INIT_STATE, action) => {
@@ -37,4 +37,3 @@ export const connectReducer = (state = INIT_STATE, action) => {
   }
   return state;
 };
-
