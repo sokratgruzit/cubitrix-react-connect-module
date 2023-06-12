@@ -238,63 +238,61 @@ export const useStake = ({ Router, tokenAddress }) => {
 
   const getStackerInfo = async (startIndex, count) => {
     dispatch({
-      type: "UPDATE_STAKE_STATE",
+      type: 'UPDATE_STAKE_STATE',
       payload: {
         loading: true,
       },
-    });
+    })
     try {
-      var tokenContract = new web3Obj.eth.Contract(WBNB, tokenAddress);
-      var decimals = await tokenContract.methods.decimals().call();
-      var getBalance = await tokenContract.methods.balanceOf(account.toString()).call();
-      var pow = 10 ** decimals;
-      var balanceInEth = getBalance / pow;
+      var tokenContract = new web3Obj.eth.Contract(WBNB, tokenAddress)
+      var decimals = await tokenContract.methods.decimals().call()
+      var getBalance = await tokenContract.methods.balanceOf(account.toString()).call()
+      var pow = 10 ** decimals
+      var balanceInEth = getBalance / pow
       dispatch({
-        type: "UPDATE_STAKE_STATE",
+        type: 'UPDATE_STAKE_STATE',
         payload: {
           balance: balanceInEth,
         },
-      });
-  
-      var contract = new web3Obj.eth.Contract(STACK_ABI, Router);
-      var totalStakedToken = await contract.methods.totalStakedToken.call().call();
-      var totalStakers = await contract.methods.totalStakers.call().call();
-      var realtimeReward = await contract.methods.realtimeReward(account).call();
-      var Stakers = await contract.methods.Stakers(account).call();
-  
-      var totalStakedTokenUser = Stakers.totalStakedTokenUser / pow;
-      var totalUnstakedTokenUser = Stakers.totalUnstakedTokenUser / pow;
-      var currentStaked = totalStakedTokenUser - totalUnstakedTokenUser;
-      totalStakedToken = totalStakedToken / pow;
-  
-      Stakers.totalStakedTokenUser = totalStakedTokenUser;
-      Stakers.totalUnstakedTokenUser = totalUnstakedTokenUser;
-      Stakers.currentStaked = currentStaked;
-      Stakers.realtimeReward = realtimeReward / pow;
-      Stakers.totalClaimedRewardTokenUser = Stakers.totalClaimedRewardTokenUser / pow;
-  
-      var stakersRecord = [];
-      var endIndex = startIndex + count;
+      })
+
+      var contract = new web3Obj.eth.Contract(STACK_ABI, Router)
+      var totalStakedToken = await contract.methods.totalStakedToken.call().call()
+      var totalStakers = await contract.methods.totalStakers.call().call()
+      var realtimeReward = await contract.methods.realtimeReward(account).call()
+      var Stakers = await contract.methods.Stakers(account).call()
+
+      var totalStakedTokenUser = Stakers.totalStakedTokenUser / pow
+      var totalUnstakedTokenUser = Stakers.totalUnstakedTokenUser / pow
+      var currentStaked = totalStakedTokenUser - totalUnstakedTokenUser
+      totalStakedToken = totalStakedToken / pow
+
+      Stakers.totalStakedTokenUser = totalStakedTokenUser
+      Stakers.totalUnstakedTokenUser = totalUnstakedTokenUser
+      Stakers.currentStaked = currentStaked
+      Stakers.realtimeReward = realtimeReward / pow
+      Stakers.totalClaimedRewardTokenUser = Stakers.totalClaimedRewardTokenUser / pow
+
+      var stakersRecord = []
+      var endIndex = startIndex + count
       if (endIndex > parseInt(Stakers.stakeCount)) {
-        endIndex = parseInt(Stakers.stakeCount);
+        endIndex = parseInt(Stakers.stakeCount)
       }
-  
+
       for (var i = startIndex; i < endIndex; i++) {
-        var stakersRecordData = await contract.methods.stakersRecord(account, i).call();
-  
-        var realtimeRewardPerBlock = await contract.methods
-          .realtimeRewardPerBlock(account, i.toString())
-          .call();
-  
-        stakersRecordData.realtimeRewardPerBlock = realtimeRewardPerBlock[0] / pow;
-  
-        stakersRecordData.unstaketime = moment.unix(stakersRecordData.unstaketime).format("DD/MM/YYYY h:mm A");
-        stakersRecordData.staketime = moment.unix(stakersRecordData.staketime).format("DD/MM/YYYY h:mm A");
-        stakersRecord.push(stakersRecordData);
+        var stakersRecordData = await contract.methods.stakersRecord(account, i).call()
+
+        var realtimeRewardPerBlock = await contract.methods.realtimeRewardPerBlock(account, i.toString()).call()
+
+        stakersRecordData.realtimeRewardPerBlock = realtimeRewardPerBlock[0] / pow
+
+        stakersRecordData.unstaketime = moment.unix(stakersRecordData.unstaketime).format('DD/MM/YYYY h:mm A')
+        stakersRecordData.staketime = moment.unix(stakersRecordData.staketime).format('DD/MM/YYYY h:mm A')
+        stakersRecord.push(stakersRecordData)
       }
-  
+
       dispatch({
-        type: "UPDATE_STAKE_STATE",
+        type: 'UPDATE_STAKE_STATE',
         payload: {
           stakersInfo: Stakers,
           stakersRecord,
@@ -304,11 +302,11 @@ export const useStake = ({ Router, tokenAddress }) => {
           },
           loading: false,
         },
-      });
+      })
     } catch (err) {
       // Handle error
       dispatch({
-        type: "UPDATE_STAKE_STATE",
+        type: 'UPDATE_STAKE_STATE',
         payload: {
           stakersInfo: {
             totalStakedTokenUser: 0,
@@ -327,10 +325,9 @@ export const useStake = ({ Router, tokenAddress }) => {
           loading: false,
           balance: 0,
         },
-      });
+      })
     }
-  };
-  
+  }
 
   const setMaxWithdrawal = async () => {
     var tokenContract = new web3Obj.eth.Contract(WBNB, tokenAddress)
