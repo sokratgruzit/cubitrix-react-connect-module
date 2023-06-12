@@ -6,6 +6,8 @@ import moment from 'moment'
 
 import { INIT_STATE } from '../reducers/stakeReducer'
 
+import { useWeb3React } from '@web3-react/core'
+
 export const useStake = ({ Router, tokenAddress }) => {
   let { account, library } = useWeb3React()
   var web3Obj = library
