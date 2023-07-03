@@ -124,7 +124,6 @@ export const useConnect = (props) => {
           });
         })
         .catch((e) => {
-          console.log(e.toString().startsWith("t: Unsupported chain id"), e.toString());
           dispatch({ type: "UPDATE_STATE", account: "", isConnected: false });
 
           if (
