@@ -126,7 +126,10 @@ export const useConnect = (props) => {
         .catch((e) => {
           console.log(e, "connect failed", e.toString());
           dispatch({ type: "UPDATE_STATE", account: "", isConnected: false });
-          if (e.toString().startsWith("UnsupportedChainIdError")) {
+          if (
+            e.toString().startsWith("UnsupportedChainIdError") ||
+            e.toString().startsWith("t: Unsupported chain id")
+          ) {
             dispatch({
               type: "CONNECTION_ERROR",
               payload: "Please switch your network in wallet",
