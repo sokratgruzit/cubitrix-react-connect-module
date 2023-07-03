@@ -122,10 +122,9 @@ export const useConnect = (props) => {
             isConnected: true,
             providerType,
           });
-          console.log("connect success");
         })
         .catch((e) => {
-          console.log(e, "connect failed");
+          console.log(e, "connect failed", e.toString());
           dispatch({ type: "UPDATE_STATE", account: "", isConnected: false });
           if (e.toString().startsWith("UnsupportedChainIdError")) {
             dispatch({
