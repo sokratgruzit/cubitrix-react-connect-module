@@ -249,7 +249,7 @@ export const useStake = ({ Router, tokenAddress }) => {
       const tokenContract = new web3Obj.eth.Contract(WBNB, tokenAddress);
       const contract = new web3Obj.eth.Contract(STACK_ABI, Router);
 
-      const [
+      let [
         decimals,
         getBalance,
         totalStakedToken,
