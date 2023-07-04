@@ -33,9 +33,18 @@ export const stakeReducer = (state = INIT_STATE, { type, payload }) => {
   }
 
   if (type === "UPDATE_STAKERS_RECORD") {
+    console.log("payload", payload.stakersRecord, state.stakersRecord);
+    const newRecords = payload.stakersRecord.filter((record) => {
+      return (
+        state.stakersRecord.findIndex(
+          (existing) =>
+            existing[Object.keys(existing)[0]] === record[Object.keys(record)[0]],
+        ) === -1
+      );
+    });
     return {
       ...state,
-      stakersRecord: [...state.stakersRecord, ...payload.stakersRecord],
+      stakersRecord: [...state.stakersRecord, ...newRecords],
     };
   }
 
