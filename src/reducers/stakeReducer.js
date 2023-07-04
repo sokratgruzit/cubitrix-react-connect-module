@@ -32,7 +32,7 @@ export const stakeReducer = (state = INIT_STATE, { type, payload }) => {
     };
   }
 
-  if ((type = "UPDATE_STAKERS_RECORD")) {
+  if (type === "UPDATE_STAKERS_RECORD") {
     return {
       ...state,
       stakersRecord: [...state.stakersRecord, ...payload],
