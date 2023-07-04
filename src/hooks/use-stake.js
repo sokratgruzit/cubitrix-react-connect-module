@@ -319,13 +319,18 @@ export const useStake = ({ Router, tokenAddress }) => {
         type: "UPDATE_STAKE_STATE",
         payload: {
           stakersInfo: Stakers,
-          stakersRecord,
           stackContractInfo: {
             totalStakers,
             totalStakedToken,
           },
           hasMoreData,
           loading: false,
+        },
+      });
+      dispatch({
+        type: "UPDATE_STAKERS_RECORD",
+        payload: {
+          stakersRecord,
         },
       });
     } catch (err) {
