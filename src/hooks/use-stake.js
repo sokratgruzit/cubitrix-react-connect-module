@@ -169,7 +169,7 @@ export const useStake = ({ Router, tokenAddress }) => {
     }
   };
 
-  const unstake = async (index) => {
+  const unstake = async (index, callback, errCallback) => {
     dispatch({
       type: "UPDATE_STAKE_STATE",
       payload: {
@@ -182,6 +182,7 @@ export const useStake = ({ Router, tokenAddress }) => {
         .unstake(index.toString())
         .send({ from: account })
         .then((result) => {
+          if (callback) callback(index);
           getStackerInfo();
           dispatch({
             type: "UPDATE_STAKE_STATE",
@@ -192,6 +193,7 @@ export const useStake = ({ Router, tokenAddress }) => {
           notify(false, "successfully unstake");
         });
     } catch (err) {
+      if (errCallback) errCallback(err);
       dispatch({
         type: "UPDATE_STAKE_STATE",
         payload: {
@@ -202,7 +204,7 @@ export const useStake = ({ Router, tokenAddress }) => {
     }
   };
 
-  const harvest = async (index) => {
+  const harvest = async (index, callback, errCallback) => {
     dispatch({
       type: "UPDATE_STAKE_STATE",
       payload: {
@@ -215,6 +217,7 @@ export const useStake = ({ Router, tokenAddress }) => {
         .harvest(index.toString())
         .send({ from: account })
         .then((err) => {
+          if (callback) callback(index);
           getStackerInfo();
           dispatch({
             type: "UPDATE_STAKE_STATE",
@@ -226,7 +229,7 @@ export const useStake = ({ Router, tokenAddress }) => {
           notify(false, "Reward successfully harvested");
         });
     } catch (err) {
-      console.log(err);
+      if (errCallback) errCallback(err);
       dispatch({
         type: "UPDATE_STAKE_STATE",
         payload: {
