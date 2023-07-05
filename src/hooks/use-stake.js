@@ -25,12 +25,6 @@ export const useStake = ({ Router, tokenAddress }) => {
   };
 
   const checkAllowance = async () => {
-    dispatch({
-      type: "UPDATE_STAKE_STATE",
-      payload: {
-        isAllowanceLoading: true,
-      },
-    });
     try {
       var tokenContract = new web3Obj.eth.Contract(WBNB, tokenAddress);
       var decimals = await tokenContract.methods.decimals().call();
@@ -48,8 +42,14 @@ export const useStake = ({ Router, tokenAddress }) => {
         (await tokenContract.methods.allowance(account, Router).call()) / pow;
 
       const depositNumber = Number(depositAmount);
-
       if (allowance < 1 || (depositNumber > 0 && allowance < depositNumber)) {
+        dispatch({
+          type: "UPDATE_STAKE_STATE",
+          payload: {
+            isAllowance: true,
+          },
+        });
+      } else if (allowance > 1e30) {
         dispatch({
           type: "UPDATE_STAKE_STATE",
           payload: {
@@ -64,20 +64,8 @@ export const useStake = ({ Router, tokenAddress }) => {
           },
         });
       }
-
-      dispatch({
-        type: "UPDATE_STAKE_STATE",
-        payload: {
-          isAllowanceLoading: false,
-        },
-      });
     } catch (err) {
-      dispatch({
-        type: "UPDATE_STAKE_STATE",
-        payload: {
-          isAllowanceLoading: false,
-        },
-      });
+      console.log("isAlowance error", err);
     }
   };
 
