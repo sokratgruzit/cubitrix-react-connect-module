@@ -19,6 +19,7 @@ export const INIT_STATE = {
   balance: 0,
   stakersRecord: [],
   isAllowance: false,
+  isAllowanceLoading: false,
   loading: false,
   hasMoreData: false,
   timeperiodDate: moment().add(30, "days").format("DD/MM/YYYY h:mm A"),

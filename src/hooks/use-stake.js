@@ -1,12 +1,36 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import STACK_ABI from "../abi/stack.json";
 import WBNB from "../abi/WBNB.json";
 import moment from "moment";
 
-import { INIT_STATE } from "../reducers/stakeReducer";
+// import { INIT_STATE } from "../reducers/stakeReducer";
 
 import { useWeb3React } from "@web3-react/core";
+
+const INIT_STATE = {
+  stackContractInfo: {
+    totalStakers: 0,
+    totalStakedToken: 0,
+  },
+  stakersInfo: {
+    totalStakedTokenUser: 0,
+    totalUnstakedTokenUser: 0,
+    totalClaimedRewardTokenUser: 0,
+    currentStaked: 0,
+    realtimeReward: 0,
+    stakeCount: 0,
+    alreadyExists: false,
+  },
+  depositAmount: "",
+  timeperiod: 0,
+  balance: 0,
+  stakersRecord: [],
+  isAllowance: false,
+  loading: false,
+  hasMoreData: false,
+  timeperiodDate: moment().add(30, "days").format("DD/MM/YYYY h:mm A"),
+};
 
 export const useStake = ({ Router, tokenAddress }) => {
   let { account, library } = useWeb3React();
@@ -28,7 +52,7 @@ export const useStake = ({ Router, tokenAddress }) => {
     dispatch({
       type: "UPDATE_STAKE_STATE",
       payload: {
-        loading: true,
+        isAllowanceLoading: true,
       },
     });
     try {
@@ -44,50 +68,44 @@ export const useStake = ({ Router, tokenAddress }) => {
           balance: balanceInEth,
         },
       });
-      var allowance = await tokenContract.methods.allowance(account, Router).call();
+      var allowance =
+        (await tokenContract.methods.allowance(account, Router).call()) / pow;
 
-      if (allowance <= 2) {
+      const depositNumber = Number(depositAmount);
+
+      if (allowance < 1 || (depositNumber > 0 && allowance < depositNumber)) {
         dispatch({
           type: "UPDATE_STAKE_STATE",
           payload: {
             isAllowance: true,
           },
         });
+      } else {
+        dispatch({
+          type: "UPDATE_STAKE_STATE",
+          payload: {
+            isAllowance: false,
+          },
+        });
       }
-      if (depositAmount > 0) {
-        var amount = depositAmount * pow;
-        if (allowance < amount) {
-          dispatch({
-            type: "UPDATE_STAKE_STATE",
-            payload: {
-              isAllowance: true,
-            },
-          });
-        }
-      }
+
       dispatch({
         type: "UPDATE_STAKE_STATE",
         payload: {
-          loading: false,
+          isAllowanceLoading: false,
         },
       });
     } catch (err) {
       dispatch({
         type: "UPDATE_STAKE_STATE",
         payload: {
-          loading: false,
+          isAllowanceLoading: false,
         },
       });
     }
   };
 
   const approve = async (callback, errCallback) => {
-    dispatch({
-      type: "UPDATE_STAKE_STATE",
-      payload: {
-        loading: true,
-      },
-    });
     try {
       var contract = new web3Obj.eth.Contract(WBNB, tokenAddress);
       var amountIn = 10 ** 69;
@@ -101,18 +119,11 @@ export const useStake = ({ Router, tokenAddress }) => {
             type: "UPDATE_STAKE_STATE",
             payload: {
               isAllowance: false,
-              loading: false,
             },
           });
         });
     } catch (err) {
       if (errCallback) errCallback(err);
-      dispatch({
-        type: "UPDATE_STAKE_STATE",
-        payload: {
-          loading: false,
-        },
-      });
       notify(true, err.message);
     }
   };
@@ -123,13 +134,6 @@ export const useStake = ({ Router, tokenAddress }) => {
       return;
     }
     await checkAllowance();
-    dispatch({
-      type: "UPDATE_STAKE_STATE",
-      payload: {
-        loading: true,
-      },
-    });
-
     try {
       var tokenContract = new web3Obj.eth.Contract(WBNB, tokenAddress);
       const decimals = await tokenContract.methods.decimals().call();
@@ -148,7 +152,6 @@ export const useStake = ({ Router, tokenAddress }) => {
           dispatch({
             type: "UPDATE_STAKE_STATE",
             payload: {
-              loading: false,
               depositAmount: INIT_STATE.depositAmount,
               timeperiodDate: INIT_STATE.timeperiodDate,
               timeperiod: INIT_STATE.timeperiod,
@@ -159,23 +162,11 @@ export const useStake = ({ Router, tokenAddress }) => {
         });
     } catch (err) {
       if (errCallback) errCallback(err);
-      dispatch({
-        type: "UPDATE_STAKE_STATE",
-        payload: {
-          loading: false,
-        },
-      });
       notify(true, err.message);
     }
   };
 
   const unstake = async (index, callback, errCallback) => {
-    dispatch({
-      type: "UPDATE_STAKE_STATE",
-      payload: {
-        loading: true,
-      },
-    });
     try {
       var contract = new web3Obj.eth.Contract(STACK_ABI, Router);
       await contract.methods
@@ -184,33 +175,15 @@ export const useStake = ({ Router, tokenAddress }) => {
         .then((result) => {
           if (callback) callback(index);
           getStackerInfo();
-          dispatch({
-            type: "UPDATE_STAKE_STATE",
-            payload: {
-              loading: false,
-            },
-          });
           notify(false, "successfully unstake");
         });
     } catch (err) {
       if (errCallback) errCallback(err);
-      dispatch({
-        type: "UPDATE_STAKE_STATE",
-        payload: {
-          loading: false,
-        },
-      });
       notify(true, "unstake fail");
     }
   };
 
   const harvest = async (index, callback, errCallback) => {
-    dispatch({
-      type: "UPDATE_STAKE_STATE",
-      payload: {
-        loading: true,
-      },
-    });
     try {
       var contract = new web3Obj.eth.Contract(STACK_ABI, Router);
       await contract.methods
@@ -219,23 +192,11 @@ export const useStake = ({ Router, tokenAddress }) => {
         .then((err) => {
           if (callback) callback(index);
           getStackerInfo();
-          dispatch({
-            type: "UPDATE_STAKE_STATE",
-            payload: {
-              loading: false,
-            },
-          });
           checkAllowance();
           notify(false, "Reward successfully harvested");
         });
     } catch (err) {
       if (errCallback) errCallback(err);
-      dispatch({
-        type: "UPDATE_STAKE_STATE",
-        payload: {
-          loading: false,
-        },
-      });
       notify(true, err.message);
     }
   };
