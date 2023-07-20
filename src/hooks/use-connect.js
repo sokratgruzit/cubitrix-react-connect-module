@@ -75,8 +75,8 @@ export const useConnect = (props) => {
               chainId: "0x61", // ChainID for the Binance Smart Chain Testnet
               chainName: "BSC Testnet",
               nativeCurrency: {
-                name: "BNB",
-                symbol: "bnb",
+                name: "tBNB",
+                symbol: "tBNB",
                 decimals: 18,
               },
               rpcUrls: ["https://data-seed-prebsc-1-s1.binance.org:8545/"],
@@ -138,6 +138,7 @@ export const useConnect = (props) => {
               injected.walletConnectProvider = undefined;
             }
           }
+          console.log(e);
         })
         .finally(() => {
           setTimeout(() => {
