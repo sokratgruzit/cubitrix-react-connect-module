@@ -96,7 +96,7 @@ export const useConnect = (props) => {
     }
   };
 
-  const connect = async (providerType, injected) => {
+  const connect = async (providerType, injected, callback, errorCallback) => {
     if (typeof window.ethereum === "undefined" && providerType === "metaMask") {
       dispatch({
         type: "CONNECTION_ERROR",
@@ -117,6 +117,7 @@ export const useConnect = (props) => {
         activate(injected, undefined, true).then(resolve).catch(reject);
       })
         .then(() => {
+          if (callback) callback();
           dispatch({
             type: "UPDATE_STATE",
             isConnected: true,
@@ -125,7 +126,6 @@ export const useConnect = (props) => {
         })
         .catch((e) => {
           dispatch({ type: "UPDATE_STATE", account: "", isConnected: false });
-
           if (
             e.toString().startsWith("UnsupportedChainIdError") ||
             e.toString().startsWith("t: Unsupported chain id")
@@ -138,7 +138,7 @@ export const useConnect = (props) => {
               injected.walletConnectProvider = undefined;
             }
           }
-          console.log(e);
+          if (errorCallback) errorCallback();
         })
         .finally(() => {
           setTimeout(() => {
