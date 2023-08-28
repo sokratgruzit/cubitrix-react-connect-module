@@ -167,6 +167,15 @@ export const useConnect = (props) => {
     }
   }
 
+  async function web3PersonalSign(library, account, message, callback, errCallback) {
+    try {
+      const signature = await library.eth.personal.sign(message, account);
+      if (callback) callback(account, signature);
+    } catch (err) {
+      if (errCallback) errCallback(err);
+    }
+  }
+
   const values = useMemo(
     () => ({
       account: account ?? "",
@@ -179,6 +188,7 @@ export const useConnect = (props) => {
       MetaMaskEagerlyConnect,
       WalletConnectEagerly,
       switchToBscTestnet,
+      web3PersonalSign,
     }),
     [account, active, connectionLoading, chainId, library],
   );
