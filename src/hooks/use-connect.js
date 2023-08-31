@@ -14,41 +14,37 @@ export const useConnect = (props) => {
   const isConnected = useSelector((state) => state.connect.isConnected);
   const providerType = useSelector((state) => state.connect.providerType);
 
-  async function MetaMaskEagerlyConnect(injected, callback) {
+  async function MetaMaskEagerlyConnect(injected, connectCallback, errCallback) {
     if (providerType === "metaMask") {
       try {
-        injected
-          .isAuthorized()
-          .then((isAuthorized) => {
-            if (isAuthorized && isConnected) {
-              connect(providerType, injected);
-            } else {
-              dispatch({
-                type: "UPDATE_STATE",
-                account: "",
-                isConnected: false,
-                providerType: "",
-              });
-              dispatch({ type: "SET_TRIED_RECONNECT", payload: true });
+        injected.isAuthorized().then((isAuthorized) => {
+          if (isAuthorized && isConnected) {
+            connect(providerType, injected, connectCallback);
+          } else {
+            dispatch({
+              type: "UPDATE_STATE",
+              account: "",
+              isConnected: false,
+              providerType: "",
+            });
+            dispatch({ type: "SET_TRIED_RECONNECT", payload: true });
+            if (errCallback) {
+              errCallback();
             }
-          })
-          .finally(() => {
-            if (callback) {
-              callback();
-            }
-          });
+          }
+        });
       } catch (err) {
         console.log(err);
       }
     }
   }
 
-  async function WalletConnectEagerly(walletConnect, callback) {
+  async function WalletConnectEagerly(walletConnect, connectCallback, errCallback) {
     if (providerType === "walletConnect") {
       try {
         if (isConnected) {
           setTimeout(() => {
-            connect(providerType, walletConnect);
+            connect(providerType, walletConnect, connectCallback);
           }, 0);
         } else {
           dispatch({
@@ -58,6 +54,9 @@ export const useConnect = (props) => {
             providerType: "",
           });
           dispatch({ type: "SET_TRIED_RECONNECT", payload: true });
+          if (errCallback) {
+            errCallback();
+          }
         }
       } catch (err) {
         console.log(err);
