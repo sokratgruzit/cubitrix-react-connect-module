@@ -64,24 +64,12 @@ export const useConnect = (props) => {
     }
   }
 
-  const switchToBscTestnet = async () => {
+  const switchToBscTestnet = async (params = []) => {
     try {
       if (window.ethereum) {
         await window.ethereum.request({
           method: "wallet_addEthereumChain",
-          params: [
-            {
-              chainId: "0x61", // ChainID for the Binance Smart Chain Testnet
-              chainName: "BSC Testnet",
-              nativeCurrency: {
-                name: "tBNB",
-                symbol: "tBNB",
-                decimals: 18,
-              },
-              rpcUrls: ["https://data-seed-prebsc-1-s1.binance.org:8545/"],
-              blockExplorerUrls: ["https://testnet.bscscan.com"],
-            },
-          ],
+          params: params,
         });
         dispatch({
           type: "CONNECTION_ERROR",
