@@ -1,6 +1,6 @@
 {
   "name": "@cubitrix/cubitrix-react-connect-module",
-  "version": "0.0.89",
+  "version": "0.0.91",
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
