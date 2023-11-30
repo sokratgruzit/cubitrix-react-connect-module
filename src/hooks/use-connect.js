@@ -2,8 +2,6 @@ import { useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useWeb3React } from "@web3-react/core";
 
-import { WalletConnectConnector } from "@web3-react/walletconnect-connector";
-
 export const useConnect = () => {
   const [connectionLoading, setConnectionLoading] = useState(false);
 
@@ -11,7 +9,7 @@ export const useConnect = () => {
   const providerType = useSelector((state) => state.connect.providerType);
   
   const dispatch = useDispatch();
-  let { activate, account, library, deactivate, chainId, active, error, connector } = useWeb3React();
+  let { activate, account, library, deactivate, chainId, active } = useWeb3React();
 
   async function MetaMaskEagerlyConnect(injected, connectCallback, errCallback) {
     if (providerType === "metaMask") {
@@ -99,51 +97,46 @@ export const useConnect = () => {
       await disconnect();
     }
 
-    if (providerType === "metaMask") {
-      try {
-        new Promise((resolve, reject) => {
-          activate(provider, undefined, true).then(resolve).catch(reject);
-        })
-          .then(() => {
-            if (callback) callback();
-            dispatch({
-              type: "UPDATE_STATE",
-              isConnected: true,
-              providerType,
-            });
-          })
-          .catch((e) => {
-            dispatch({ type: "UPDATE_STATE", account: "", isConnected: false });
-  
-            if (
-              e.toString().startsWith("UnsupportedChainIdError") ||
-              e.toString().startsWith("t: Unsupported chain id")
-            ) {
-              dispatch({
-                type: "CONNECTION_ERROR",
-                payload: "Please switch your network in wallet",
-              });
-              // if (injected instanceof WalletConnectConnector) {
-              //   injected.walletConnectProvider = undefined;
-              // }
-            }
-  
-            if (errorCallback) errorCallback();
-          })
-          .finally(() => {
-            setTimeout(() => {
-              dispatch({ type: "SET_TRIED_RECONNECT", payload: true });
-            }, 500);
-  
-            setConnectionLoading(false);
+    try {
+      new Promise((resolve, reject) => {
+        activate(provider, undefined, true).then(resolve).catch(reject);
+      })
+        .then(() => {
+          if (callback) callback();
+          dispatch({
+            type: "UPDATE_STATE",
+            isConnected: true,
+            providerType,
           });
-      } catch (error) {
-        console.log("Error on connecting: ", error);
-      }
-    }
+        })
+        .catch((e) => {
+          dispatch({ type: "UPDATE_STATE", account: "", isConnected: false });
 
-    if (providerType === "walletConnect") {
-      console.log(provider)
+          if (
+            e.toString().startsWith("UnsupportedChainIdError") ||
+            e.toString().startsWith("t: Unsupported chain id")
+          ) {
+            dispatch({
+              type: "CONNECTION_ERROR",
+              payload: "Please switch your network in wallet",
+            });
+
+            // if (provider instanceof WalletConnectConnector) {
+            //   provider.walletConnectProvider = undefined;
+            // }
+          }
+
+          if (errorCallback) errorCallback();
+        })
+        .finally(() => {
+          setTimeout(() => {
+            dispatch({ type: "SET_TRIED_RECONNECT", payload: true });
+          }, 500);
+
+          setConnectionLoading(false);
+        });
+    } catch (error) {
+      console.log("Error on connecting: ", error);
     }
   };
 

@@ -1,6 +1,6 @@
 {
   "name": "@cubitrix/cubitrix-react-connect-module",
-  "version": "0.0.93",
+  "version": "0.0.97",
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -29,7 +29,6 @@
     "qrcode": "^1.5.1",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
-    "@web3-react/walletconnect-connector": "^6.2.8",
     "axios": "^1.2.2",
     "web3": "^1.6.1"
   },
@@ -39,7 +38,6 @@
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
-    "@web3-react/walletconnect-connector": "^6.2.8",
     "axios": "^1.2.2",
     "babel-loader": "^8.3.0",
     "postcss": "^8.4.21",
