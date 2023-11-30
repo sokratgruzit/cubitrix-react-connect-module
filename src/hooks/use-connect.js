@@ -4,15 +4,14 @@ import { useWeb3React } from "@web3-react/core";
 
 import { WalletConnectConnector } from "@web3-react/walletconnect-connector";
 
-export const useConnect = (props) => {
-  let { activate, account, library, deactivate, chainId, active, error, connector } =
-    useWeb3React();
-
+export const useConnect = () => {
   const [connectionLoading, setConnectionLoading] = useState(false);
 
-  const dispatch = useDispatch();
   const isConnected = useSelector((state) => state.connect.isConnected);
   const providerType = useSelector((state) => state.connect.providerType);
+  
+  const dispatch = useDispatch();
+  let { activate, account, library, deactivate, chainId, active, error, connector } = useWeb3React();
 
   async function MetaMaskEagerlyConnect(injected, connectCallback, errCallback) {
     if (providerType === "metaMask") {
@@ -83,7 +82,7 @@ export const useConnect = (props) => {
     }
   };
 
-  const connect = async (providerType, injected, callback, errorCallback) => {
+  const connect = async (providerType, provider, callback, errorCallback) => {
     if (typeof window.ethereum === "undefined" && providerType === "metaMask") {
       dispatch({
         type: "CONNECTION_ERROR",
@@ -91,6 +90,7 @@ export const useConnect = (props) => {
       });
       return;
     }
+
     if (providerType === "metaMask") {
       setConnectionLoading(true);
     }
@@ -99,42 +99,51 @@ export const useConnect = (props) => {
       await disconnect();
     }
 
-    try {
-      new Promise((resolve, reject) => {
-        activate(injected, undefined, true).then(resolve).catch(reject);
-      })
-        .then(() => {
-          if (callback) callback();
-          dispatch({
-            type: "UPDATE_STATE",
-            isConnected: true,
-            providerType,
-          });
+    if (providerType === "metaMask") {
+      try {
+        new Promise((resolve, reject) => {
+          activate(provider, undefined, true).then(resolve).catch(reject);
         })
-        .catch((e) => {
-          dispatch({ type: "UPDATE_STATE", account: "", isConnected: false });
-          if (
-            e.toString().startsWith("UnsupportedChainIdError") ||
-            e.toString().startsWith("t: Unsupported chain id")
-          ) {
+          .then(() => {
+            if (callback) callback();
             dispatch({
-              type: "CONNECTION_ERROR",
-              payload: "Please switch your network in wallet",
+              type: "UPDATE_STATE",
+              isConnected: true,
+              providerType,
             });
-            if (injected instanceof WalletConnectConnector) {
-              injected.walletConnectProvider = undefined;
+          })
+          .catch((e) => {
+            dispatch({ type: "UPDATE_STATE", account: "", isConnected: false });
+  
+            if (
+              e.toString().startsWith("UnsupportedChainIdError") ||
+              e.toString().startsWith("t: Unsupported chain id")
+            ) {
+              dispatch({
+                type: "CONNECTION_ERROR",
+                payload: "Please switch your network in wallet",
+              });
+              // if (injected instanceof WalletConnectConnector) {
+              //   injected.walletConnectProvider = undefined;
+              // }
             }
-          }
-          if (errorCallback) errorCallback();
-        })
-        .finally(() => {
-          setTimeout(() => {
-            dispatch({ type: "SET_TRIED_RECONNECT", payload: true });
-          }, 500);
-          setConnectionLoading(false);
-        });
-    } catch (error) {
-      console.log("Error on connecting: ", error);
+  
+            if (errorCallback) errorCallback();
+          })
+          .finally(() => {
+            setTimeout(() => {
+              dispatch({ type: "SET_TRIED_RECONNECT", payload: true });
+            }, 500);
+  
+            setConnectionLoading(false);
+          });
+      } catch (error) {
+        console.log("Error on connecting: ", error);
+      }
+    }
+
+    if (providerType === "walletConnect") {
+      console.log(provider)
     }
   };
 
@@ -143,7 +152,9 @@ export const useConnect = (props) => {
       if (library && library.provider && library.provider.close) {
         await library.provider.close();
       }
+
       deactivate();
+
       dispatch({
         type: "UPDATE_STATE",
         account: "",
